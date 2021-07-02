@@ -37,9 +37,9 @@ const Card = ({ setList }) => {
         }
     } 
 
+
     const handleChange = (input, index) => {
         const value = input.value;
-
         /**
          * Return if the value is not a number.
          * (We can also implement the validation for this.)
@@ -82,7 +82,6 @@ const Card = ({ setList }) => {
 
     const handleFocus = (e) => {
         const prevElem = e.target.previousElementSibling;
-
         /**
          * Prevent user from focusing on the next element before filling the current one
          * (Only usefull if we decide to keep the inputs enabled)
@@ -118,16 +117,11 @@ const Card = ({ setList }) => {
          *  */  
         const loopLimit = (chunkedValues.filter((value) => value)).length;    
         
-
         for (; i < loopLimit; i++) {
-            
             currentInput.value = chunkedValues[i];   // Set element's value from chunkValues
-
-            (i < INPUTS - 1) && focusNextElement(currentInput);     // Prevent focus overflow
-                        
+            (i < INPUTS - 1) && focusNextElement(currentInput);     // Prevent focus overflow            
             currentInput = currentInput.nextElementSibling;     // Set next element 
-            
-        }
+        }   
 
         /**
          * Setting values in Cardnum also to keep it in sync with inputs
@@ -147,6 +141,8 @@ const Card = ({ setList }) => {
         );
     }, [cardNum])
 
+
+    
     return ( 
      <div className="cardContainer">
         <div className="fieldContainer">

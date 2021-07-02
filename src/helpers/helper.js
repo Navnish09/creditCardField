@@ -11,10 +11,10 @@ export const enableInput = (elem) => {
     elem.disabled = false
 }
 
+// Focus a specific element
 export const focusElement = (elem) => {
     elem.focus();
 }
-
 
 // Focus next sibling of the element
 export const focusNextElement = (elem) => {
