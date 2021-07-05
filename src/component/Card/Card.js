@@ -19,10 +19,10 @@ const Card = ({ setList }) => {
     const [validValue,  setValidValue] = useState(false); 
     const lastInput = useRef();
 
-
     // Submit the value 
     const submitValue = (lastInput) => {
         setList(cardNum.join("-"));
+       
         setCardNum(initialState);   // Reset fields
 
         let checkPrev = lastInput;
@@ -32,7 +32,7 @@ const Card = ({ setList }) => {
         while (checkPrev) {
             focusElement(checkPrev);
             (flag > 1) && disableInput(checkPrev);
-            checkPrev = checkPrev.previousElementSibling
+            checkPrev = checkPrev.previousElementSibling;
             flag--;
         }
     } 
@@ -62,11 +62,14 @@ const Card = ({ setList }) => {
             setCardNum([
                 ...cardNum.map((num, i) => (i === index) ? input.value : num)
             ]);
-        
     }
+
 
     const handleKeyDown = (e, index) => {
         let inputElem = e.target;
+
+        if(e.key === " " || e.code === "Space") e.preventDefault();
+
         /**
          * Detect Backspace button and set focus to previous input if current is empty 
          * (Only usefull if we decide to keep the inputs enabled)
@@ -88,6 +91,14 @@ const Card = ({ setList }) => {
          * */
         if(!prevElem?.value) return;
     }
+
+
+    const handleBlur = (elem, index) => {
+        if(index !== 0){
+            (!elem.value) && disableInput(elem);
+        }
+    }
+
 
     const handlePaste = (e, index) => {
         e.preventDefault();
@@ -130,7 +141,7 @@ const Card = ({ setList }) => {
     }
 
     
-    const handleSubmit = () => {
+    const handleSubmit = (e) => {
         submitValue(lastInput.current);
     }
     
@@ -141,12 +152,12 @@ const Card = ({ setList }) => {
         );
     }, [cardNum])
 
-
     
     return ( 
      <div className="cardContainer">
         <div className="fieldContainer">
             <div className="fields">
+            
                 {
                     cardNum.map((data, index) => (
                         <SmallInput
@@ -158,7 +169,8 @@ const Card = ({ setList }) => {
                             value={data}
                             onKeyDown={(e) => handleKeyDown(e, index)}
                             onPaste={(e) => handlePaste(e, index)}
-                            inputRef = {(index === INPUTS-1 ? lastInput : null)}
+                            inputRef = {lastInput}
+                            onBlur={(e) => handleBlur(e.target, index)}
                         />
                         
                     ))
@@ -168,6 +180,7 @@ const Card = ({ setList }) => {
             <div className="button">
                     <Button text="Submit" onClick={handleSubmit} disabled={!validValue && true} />
             </div>
+            
         </div>
      </div>
     )

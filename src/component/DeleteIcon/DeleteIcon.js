@@ -7,9 +7,9 @@ const DeleteIcon = ({item, deleteItem}) => {
 
     return ( 
         <>
-        <span onClick={handleClick}>
-            <strong>x</strong>
-        </span>
+            <span onClick={handleClick}>
+                <strong>x</strong>
+            </span>
         </>
      );
 }

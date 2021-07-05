@@ -19,7 +19,6 @@ const App = () => {
 
     // Delete list itme
     const deleteListItem = useCallback((value) => {
-      console.log(value);
       setListItems(p => [...p.filter(item=> item !== value)]);
     }, [])
 
@@ -29,7 +28,6 @@ const App = () => {
                 <div className="main">
                     <Card setList={setItems} />
                     <div>
-
                     <List>
                         {
                             listItems.map((item, index) => (

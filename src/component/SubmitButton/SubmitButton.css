@@ -1,11 +1,11 @@
 .submitButton{
-    background: black;
+    background: #393E46;
     outline: none;
     border-radius: 2px;
     padding: 0.8em 1.5em;
     border: none;
     font-weight: bold;
-    color: rgb(221, 221, 221);
+    color: rgb(241, 241, 241);
     cursor: pointer;
 }
 
