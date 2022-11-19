@@ -1,50 +1,44 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import Card from './component/Card/Card';
 import List from './component/List/List';
-import ListItem from './component/ListItem/ListItem';
-import DeleteIcon from './component/DeleteIcon/DeleteIcon';
-import  "./App.css";
 
-/**
- * I'm doing prop drilling in this project we can avoid it using redux.
- */
+import classes from "./App.module.scss";
 
-const App = () => {   
-    const [listItems, setListItems] = useState([]);
+const App = () => {
+  const [listItems, setListItems] = useState([]);
 
-    // Set new item to list
-    const setItems = useCallback((value)=> {
-        setListItems(p => [...p, value]);
-    }, [])
+  // Set new item to list
+  const setItems = useCallback((value) => {
+    setListItems(p => [...p, value]);
+  }, [])
 
-    // Delete list itme
-    const deleteListItem = useCallback((value) => {
-      setListItems(p => [...p.filter(item=> item !== value)]);
-    }, [])
+  // Delete list itme
+  const deleteListItem = useCallback((value) => {
+    setListItems(p => [...p.filter(item => item !== value)]);
+  }, [])
 
-    return (
-        <> 
-            <div className="container">
-                <div className="main">
-                    <Card setList={setItems} />
-                    <div>
-                    <List>
-                        {
-                            listItems.map((item, index) => (
-                                <ListItem key={index}>
-                                    <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-                                        <div>{item}</div>
-                                        <DeleteIcon style={{cursor:'pointer'}} deleteItem={deleteListItem} item={item} />
-                                    </div>
-                                </ListItem>
-                            ))
-                        }
-                    </List>
-                    </div>
-                </div>
-            </div>
-        </>
-    )
+
+  const handleSubmit = (cardValue) => {
+    setItems(cardValue);
+  }
+
+  return (
+    <div className={classes.container}>
+      <div className={classes.main}>
+        <Card
+          requiredLength={16}
+          valueLimit={4}
+          blockCount={4}
+          onSubmit={handleSubmit}
+        />
+
+        {
+          listItems.length > 0 &&
+          <List items={listItems} onItemDelete={deleteListItem} />
+        }
+      </div>
+    </div>
+  )
 }
 
 

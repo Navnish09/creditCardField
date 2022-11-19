@@ -1,17 +1,9 @@
-import './DeleteIcon.css';
+import classes from './DeleteIcon.module.scss';
 
-const DeleteIcon = ({item, deleteItem}) => {
-    const handleClick = () => {
-        deleteItem(item);
-    }
+export const DeleteIcon = ({ onClick }) => (
+    <span onClick={onClick} className={classes.iconWrapper}>
+        <strong>x</strong>
+    </span>
+);
 
-    return ( 
-        <>
-            <span onClick={handleClick}>
-                <strong>x</strong>
-            </span>
-        </>
-     );
-}
- 
 export default DeleteIcon;

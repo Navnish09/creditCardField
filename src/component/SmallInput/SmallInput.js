@@ -1,10 +1,13 @@
 import React from 'react';
-import './SmallInput.css';
+import classes from './InputBlock.module.scss';
 
-const SmallInput = ({ inputRef, ...props}) => {
-    return ( 
-        <input className="smallInput" ref={inputRef} {...props} />
-     );
+export const InputBlock = ({ inputRef, hideText, ...props }) => {
+	const type = hideText ? "password" : "text";
+
+	
+	return (
+		<input type={type} className={classes.inputBlock} ref={inputRef} {...props} />
+	);
 }
- 
-export default SmallInput;
+
+export default InputBlock;

@@ -1,189 +1,168 @@
-import { 
-    focusNextElement, 
-    focusPreviousElement, 
-    limitInputTextLength,
-    getEmptyArray,
-    splitText,
-    disableInput,
-    focusElement
+import { useEffect, useRef, useState } from "react";
+import { KEY_NAMES } from "../../helpers/constants";
+import {
+	focusNextElement,
+	focusPreviousElement,
+	limitInputTextLength,
+	getEmptyArray,
+	splitText,
+	focusElement,
 } from "../../helpers/helper";
-import React, { useEffect, useRef, useState } from "react";
-import SmallInput from "../SmallInput/SmallInput";
+import InputBlock from "../SmallInput/SmallInput";
 import Button from "../SubmitButton/SubmitButton";
-import { VALUE_LIMIT, INPUTS, REQUIRED_LENGTH} from "../../helpers/constants";
-import "./Card.css";
 
-const Card = ({ setList }) => {
-    const initialState = getEmptyArray(INPUTS);
-    const [cardNum, setCardNum] = useState(initialState);
-    const [validValue,  setValidValue] = useState(false); 
-    const lastInput = useRef();
+import classes from "./Card.module.scss";
 
-    // Submit the value 
-    const submitValue = (lastInput) => {
-        setList(cardNum.join("-"));
-       
-        setCardNum(initialState);   // Reset fields
+export const Card = ({ onSubmit, valueLimit, blockCount, requiredLength }) => {
+	const EMPTY_INPUT_BLOCKS = getEmptyArray(blockCount);
 
-        let checkPrev = lastInput;
-        let flag = INPUTS;
+	const [cardNum, setCardNum] = useState(EMPTY_INPUT_BLOCKS);
+	const [validValue, setValidValue] = useState(false);
+	const inputsRef = useRef({});
 
-        // Disable fields and set focus on first field and submit
-        while (checkPrev) {
-            focusElement(checkPrev);
-            (flag > 1) && disableInput(checkPrev);
-            checkPrev = checkPrev.previousElementSibling;
-            flag--;
-        }
-    } 
+	const getRefElem = (index) => inputsRef.current[index];
+
+	// Submit the value 
+	const submitValue = () => {
+		onSubmit(cardNum.join("-"));
+		
+		// Reset input blocks
+		setCardNum(EMPTY_INPUT_BLOCKS);  
+		
+		// Set focus on the first element. 
+		focusElement(getRefElem(0));
+	}
 
 
-    const handleChange = (input, index) => {
-        const value = input.value;
-        /**
-         * Return if the value is not a number.
-         * (We can also implement the validation for this.)
-         *  */ 
-        if(isNaN(input.value)) return;
+	const handleChange = (event, index) => {
+		const inputElem = event.target;
+		const value = inputElem.value.trim();
+		/**
+		 * Return if the value is not a number.
+		 *  */
+		if (isNaN(value)) return;
 
-        // Limit value length to VALUE_LIMIT
-        limitInputTextLength(input, VALUE_LIMIT);   
-        
-        // Focus on next element if value is more than and equals VALUE_LIMIT    
-        (value.length >= VALUE_LIMIT) && focusNextElement(input);
-        
-        // Focus on previous element if value is empty    
-        (!value.length) && focusPreviousElement(input);
-        
-        /**
-         * Set cardnum only if input has reached to VALUE_LIMIT
-         */
-        (value.length <= VALUE_LIMIT) &&
-            setCardNum([
-                ...cardNum.map((num, i) => (i === index) ? input.value : num)
-            ]);
-    }
+		// Limit value length to VALUE_LIMIT
+		limitInputTextLength(inputElem, valueLimit);
+
+		// Focus on next element if the length of the value has reached the valueLimit    
+		(value.length >= valueLimit) && focusNextElement(getRefElem([index + 1]));
+
+		// Focus on previous element if value is empty    
+		(!value.length) && focusPreviousElement(getRefElem([index - 1]), inputElem);
+
+		/**
+		 * Set cardnum only if input has reached to valueLimit
+		 */
+		(value.length <= valueLimit) &&
+			setCardNum(prev => prev.map((num, i) => (i === index) ? value : num))
+	}
 
 
-    const handleKeyDown = (e, index) => {
-        let inputElem = e.target;
+	const handleKeyDown = (e, index) => {
+		let inputElem = e.target;
 
-        if(e.key === " " || e.code === "Space") e.preventDefault();
+		/**
+		 * Detect Backspace button and set focus to previous input if current is empty 
+		 * (Only usefull if we decide to keep the inputs enabled)
+		 */
+		if (!inputElem.value && e.key === KEY_NAMES.Backspace) {
+			focusPreviousElement(getRefElem([index - 1]), inputElem);
+		}
 
-        /**
-         * Detect Backspace button and set focus to previous input if current is empty 
-         * (Only usefull if we decide to keep the inputs enabled)
-         */
-        (!inputElem.value && e.key === "Backspace") && focusPreviousElement(inputElem);
+		// Submit value on Enter key press
+		if (index === blockCount - 1) {
+			if (e.key === KEY_NAMES.Enter && validValue) {
+				submitValue();
+			}
+		}
+	}
 
-        if(index === INPUTS - 1){
-            if(e.key === "Enter" && validValue){
-                submitValue(lastInput.current);
-            }
-        }
-    }
-
-    const handleFocus = (e) => {
-        const prevElem = e.target.previousElementSibling;
-        /**
-         * Prevent user from focusing on the next element before filling the current one
-         * (Only usefull if we decide to keep the inputs enabled)
-         * */
-        if(!prevElem?.value) return;
-    }
-
-
-    const handleBlur = (elem, index) => {
-        if(index !== 0){
-            (!elem.value) && disableInput(elem);
-        }
-    }
+	const handleFocus = (e, index) => {
+		const prevElem = getRefElem([index - 1]);
+		/**
+		 * Prevent user from focusing on the next element before filling the current one
+		 * (Only usefull if we decide to keep the inputs enabled)
+		 * */
+		if (prevElem && !prevElem.value) return;
+	}
 
 
-    const handlePaste = (e, index) => {
-        e.preventDefault();
-        // Allow paste on first field only
-        if(index !==0) return;
-        
-        const input = e.target;
-        let currentInput = input;
-        
-        let i = 0;
-        
-        /**
-         * Get copied text from clipboard. 
-         * (Permission is not required, As clipboard is called inside paste event)
-         * */ 
-        const value = (e.clipboardData || window.clipboardData).getData('Text');
+	const handlePaste = (e, index) => {
+		e.preventDefault();
+		// Allow paste on first field only
+		if (index !== 0) return;
 
-        // Return if the value is not a number. we can also implement the validation for this.
-        if(isNaN(value)) return;
-        
-        const chunkedValues = splitText(value, VALUE_LIMIT);         // Get text splitted in 4 different chunks
-        
-        /**
-         * Using this as loop limit will help us in deciding the input focus
-         * For E.g. If paste a value having 8 numbers, The focus will be on 3rd input not
-         * on last one 
-         *  */  
-        const loopLimit = (chunkedValues.filter((value) => value)).length;    
-        
-        for (; i < loopLimit; i++) {
-            currentInput.value = chunkedValues[i];   // Set element's value from chunkValues
-            (i < INPUTS - 1) && focusNextElement(currentInput);     // Prevent focus overflow            
-            currentInput = currentInput.nextElementSibling;     // Set next element 
-        }   
+		/**
+		 * Get copied text from clipboard. 
+		 * (Permission is not required, As clipboard is called inside paste event)
+		 * */
+		const value = (e.clipboardData || window.clipboardData).getData('Text');
 
-        /**
-         * Setting values in Cardnum also to keep it in sync with inputs
-         */
-        setCardNum([...chunkedValues]);
-    }
+		// Return if the value is not a number.
+		if (isNaN(value)) return;
 
-    
-    const handleSubmit = (e) => {
-        submitValue(lastInput.current);
-    }
-    
-    
-    useEffect(() => {
-        setValidValue(
-            (cardNum.join("").length === REQUIRED_LENGTH) // True if length is 16 in this case
-        );
-    }, [cardNum])
+		// Get text splitted with each chunck having value length as valueLimit
+		const chunkedValues = splitText(value, valueLimit);         
 
-    
-    return ( 
-     <div className="cardContainer">
-        <div className="fieldContainer">
-            <div className="fields">
-            
-                {
-                    cardNum.map((data, index) => (
-                        <SmallInput
-                            type="text"
-                            onChange={(e) => handleChange(e.target, index)}
-                            key={index}
-                            disabled={(index !== 0) && true}
-                            onFocus={handleFocus}
-                            value={data}
-                            onKeyDown={(e) => handleKeyDown(e, index)}
-                            onPaste={(e) => handlePaste(e, index)}
-                            inputRef = {lastInput}
-                            onBlur={(e) => handleBlur(e.target, index)}
-                        />
-                        
-                    ))
-                }
-                <p className="note">*Only numbers are allowed</p>
-            </div>
-            <div className="button">
-                    <Button text="Submit" onClick={handleSubmit} disabled={!validValue && true} />
-            </div>
-            
-        </div>
-     </div>
-    )
+		/**
+		 * Using this as loop limit will help us in deciding the input focus
+		 * For E.g. If paste a value having 8 numbers, The focus will be on 3rd input not
+		 * on the last one 
+		 *  */
+		const inputReach = (chunkedValues.filter((value) => value)).length;
+		focusElement(inputsRef.current[inputReach-1]);
+
+
+		Object.keys(inputsRef.current).forEach((input, inpIndex) => {
+			if (inpIndex < inputReach - 1){
+				focusNextElement(inputsRef.current[inpIndex + 1]);
+			}
+		});
+
+		/**
+		 * Setting values in Cardnum also to keep it in sync with inputs
+		 */
+		setCardNum(chunkedValues);
+	}
+
+	useEffect(() => {
+		setValidValue((cardNum.join("").length === requiredLength));
+	}, [cardNum, requiredLength])
+
+
+	return (
+		<div className={classes.cardContainer}>
+			<div className={classes.fieldContainer}>
+				<div className={classes.fields}>
+
+					{
+						cardNum.map((data, index) => (
+							<InputBlock
+								key={index}
+								value={data}
+								inputRef={(element) => inputsRef.current[index] = element}
+								disabled={(index !== 0) && !data}
+								
+								onFocus={(e) => handleFocus(e, index)}
+								onChange={(e) => handleChange(e, index)}
+								onKeyDown={(e) => handleKeyDown(e, index)}
+								onPaste={(e) => handlePaste(e, index)}
+							/>
+
+						))
+					}
+					<p className={classes.note}>*Only numbers are allowed</p>
+
+				</div>
+
+				<div className={classes.button}>
+					<Button text="Submit" onClick={submitValue} disabled={!validValue && true} />
+				</div>
+
+			</div>
+		</div>
+	)
 }
- 
+
 export default Card;
