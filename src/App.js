@@ -27,7 +27,7 @@ const App = () => {
       <div className={classes.main}>
         <Card
           requiredLength={16}
-          valueLimit={4}
+          valueLength={4}
           blockCount={4}
           onSubmit={handleSubmit}
         />

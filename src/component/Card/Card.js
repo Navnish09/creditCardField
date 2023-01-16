@@ -13,7 +13,7 @@ import Button from "../SubmitButton/SubmitButton";
 
 import classes from "./Card.module.scss";
 
-export const Card = ({ onSubmit, valueLimit, blockCount, requiredLength }) => {
+export const Card = ({ onSubmit, valueLength, blockCount, requiredLength }) => {
 	const EMPTY_INPUT_BLOCKS = getEmptyArray(blockCount);
 
 	const [cardNum, setCardNum] = useState(EMPTY_INPUT_BLOCKS);
@@ -43,10 +43,10 @@ export const Card = ({ onSubmit, valueLimit, blockCount, requiredLength }) => {
 		if (isNaN(value)) return;
 
 		// Limit value length to VALUE_LIMIT
-		limitInputTextLength(inputElem, valueLimit);
+		limitInputTextLength(inputElem, valueLength);
 
 		// Focus on next element if the length of the value has reached the valueLimit    
-		(value.length >= valueLimit) && focusNextElement(getRefElem([index + 1]));
+		(value.length >= valueLength) && focusNextElement(getRefElem([index + 1]));
 
 		// Focus on previous element if value is empty    
 		(!value.length) && focusPreviousElement(getRefElem([index - 1]), inputElem);
@@ -54,7 +54,7 @@ export const Card = ({ onSubmit, valueLimit, blockCount, requiredLength }) => {
 		/**
 		 * Set cardnum only if input has reached to valueLimit
 		 */
-		(value.length <= valueLimit) &&
+		(value.length <= valueLength) &&
 			setCardNum(prev => prev.map((num, i) => (i === index) ? value : num))
 	}
 
@@ -103,7 +103,7 @@ export const Card = ({ onSubmit, valueLimit, blockCount, requiredLength }) => {
 		if (isNaN(value)) return;
 
 		// Get text splitted with each chunck having value length as valueLimit
-		const chunkedValues = splitText(value, valueLimit);         
+		const chunkedValues = splitText(value, valueLength);         
 
 		/**
 		 * Using this as loop limit will help us in deciding the input focus
