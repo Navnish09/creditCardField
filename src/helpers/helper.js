@@ -37,8 +37,8 @@ export const limitInputTextLength = (elem, limit) => {
 
 
 // Create empty array with n number of empty values
-export const getEmptyArray = (limit) => {
-    return Array(limit).fill("");
+export const getEmptyArray = (limit, defaultValue = "") => {
+    return Array(limit).fill(defaultValue);
 }
 
 //Split text into n parts with n length value in each
